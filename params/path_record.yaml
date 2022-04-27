@@ -1,0 +1,8 @@
+path_record_server:
+  ros__parameters:
+    tracking_frame: "base_footprint"
+    map_frame: "map"
+    dist_thresh: 0.25
+    angle_thresh: 1.25
+    frequency: 10.
+    path_pub_frequency: 1.

@@ -1,0 +1,11 @@
+# Get the coverage_path
+# Request code defintions
+uint8 START=0  # start path record,when start with prev status stop, will not clear
+uint8 STOP=1   # stop path record
+uint8 RESET=3   # clear path and start record
+uint8 GET=4     # get path
+uint8 request_code
+---
+# Result code defintions
+int32  path_id
+nav_msgs/Path record_path
