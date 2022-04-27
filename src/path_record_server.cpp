@@ -10,7 +10,7 @@ using namespace std::chrono;  // NOLINT
 
 PathRecordServer::PathRecordServer() : Node("path_record_server") {
   const std::string service_prefix = get_name() + std::string("/");
-  path_pub_ = this->create_publisher<nav_msgs::msg::Path>("recorded_path", 10);
+  path_pub_ = this->create_publisher<nav_msgs::msg::Path>("recorded_path", 1);
   path_record_server_ = this->create_service<path_record::srv::PathRecord>(service_prefix + "path_record", std::bind(
       &PathRecordServer::HandleService, this,
       std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
@@ -50,6 +50,10 @@ void PathRecordServer::HandleService(const std::shared_ptr<rmw_request_id_t> req
     RCLCPP_INFO(get_logger(), "✓✓✓ Start path record loop!!!");
     UpdateParam();
     working_status_ = true;
+  } else if (request->request_code == request->GET) {
+    RCLCPP_INFO(get_logger(), "✓✓✓ Get recorded path, path size: %d!!!", record_path_.poses.size());
+    response->record_path = record_path_;
+    response->last_pose_index = record_path_.poses.size() - 1;
   }
 
 }
@@ -66,8 +70,12 @@ void PathRecordServer::RecordPath() {
     auto relative_y = current_pose_.pose.position.y - record_path_.poses.back().pose.position.y;
     if (std::hypot(relative_x, relative_y) > dist_thresh_) {
       record_path_.poses.push_back(current_pose_);
-    } else if (angle_thresh_ > 0 && (std::abs(std::atan2(relative_y, relative_x)) > angle_thresh_)) {
-      record_path_.poses.push_back(current_pose_);
+    } else if (angle_thresh_ > 0) {
+      auto &quat1 = current_pose_.pose.orientation;
+      auto &quat2 = record_path_.poses.back().pose.orientation;
+      if (tf2::angleShortestPath(tf2::Quaternion(quat1.x, quat1.y, quat1.z, quat1.w),
+                                 tf2::Quaternion(quat2.x, quat2.y, quat2.z, quat2.w)) > angle_thresh_)
+        record_path_.poses.push_back(current_pose_);
     }
     if ((now - last_pub_time_).seconds() > path_pub_interval_) {
       path_pub_->publish(record_path_);

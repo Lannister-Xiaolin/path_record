@@ -7,5 +7,5 @@ uint8 GET=3     # get path
 uint8 request_code
 ---
 # Result code defintions
-int32  path_id
+int32  last_pose_index
 nav_msgs/Path record_path
