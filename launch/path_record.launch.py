@@ -29,6 +29,10 @@ def generate_launch_description():
         'use_sim_time',
         default_value='true',
         description='Use simulation (Gazebo) clock if true')
+    declare_record_with_start = DeclareLaunchArgument(
+        'record_with_start',
+        default_value='true',
+        description='record_with_start')
     # Nodes launching commands
 
     config = os.path.join(
@@ -42,9 +46,11 @@ def generate_launch_description():
         executable='path_record_server',
         output='screen',
         emulate_tty=True,  # https://github.com/ros2/launch/issues/188
-        parameters=[{"use_sim_time": LaunchConfiguration("use_sim_time")}, config])
+        parameters=[{"use_sim_time": LaunchConfiguration("use_sim_time"),
+                     "record_with_start": LaunchConfiguration("record_with_start")}, config])
 
     ld = LaunchDescription()
     ld.add_action(declare_use_sim_time_cmd)
+    ld.add_action(declare_record_with_start)
     ld.add_action(start_path_record_server_node_cmd)
     return ld

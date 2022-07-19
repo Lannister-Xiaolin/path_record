@@ -24,6 +24,18 @@ PathRecordServer::PathRecordServer() : Node("path_record_server") {
   this->declare_parameter("time_thresh", -1.);
   this->declare_parameter("frequency", 1.);
   this->declare_parameter("path_pub_frequency", 1.);
+  this->declare_parameter("record_with_start", false);
+  if (get_parameter("record_with_start").as_bool()){
+    UpdateParam();
+    RCLCPP_INFO(get_logger(), "--- Start path record loop!!!");
+    record_timer_ =
+        this->create_wall_timer(std::chrono::duration<double>{record_interval_},
+                                std::bind(&PathRecordServer::RecordPath, this));
+    last_warning_time_ = this->now();
+    last_pub_time_ = this->now();
+    working_status_ = true;
+  }
+
 }
 
 void PathRecordServer::HandleService(const std::shared_ptr<rmw_request_id_t> request_header,
