@@ -1,6 +1,6 @@
 path_record_server:
   ros__parameters:
-    tracking_frame: "base_footprint"
+    tracking_frame: "base_link"
     map_frame: "map"
     dist_thresh: 0.18
     angle_thresh: 1.25

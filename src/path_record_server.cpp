@@ -71,7 +71,7 @@ void PathRecordServer::HandleService(const std::shared_ptr<rmw_request_id_t> req
 }
 void PathRecordServer::RecordPath() {
   if (!working_status_) return;
-  auto now = this->now();
+  auto now = this->now()-tf2::durationFromSec(0.02);
   try {
     //hint: foxy with timeout param with block if no valid tf data in buffer!!!
     auto transform_stamped = tf_buffer_->lookupTransform(
