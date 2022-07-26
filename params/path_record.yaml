@@ -1,8 +1,8 @@
 path_record_server:
   ros__parameters:
-    tracking_frame: "base_link"
-    map_frame: "map"
-    dist_thresh: 0.18
-    angle_thresh: 1.25
-    frequency: 10.
-    path_pub_frequency: 1.
+    tracking_frame: "base_link"  # tracking frame for record pose
+    map_frame: "map"   # map frame
+    dist_thresh: 0.18  # if distance(current_pose, last_recorded_pose) >dist_thresh, record current pose
+    angle_thresh: 1.25 # if angle_distance(current_pose, last_recorded_pose) >angle_thresh, record current pose
+    frequency: 10.    # frequency for query pose
+    path_pub_frequency: 1.  # frequency for pub path
