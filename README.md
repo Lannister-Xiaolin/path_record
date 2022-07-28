@@ -17,8 +17,12 @@ ros2 launch path_record path_record.launch.py record_with_start:=True
 ros2 service call /path_record_server/path_record path_record/srv/PathRecord "{ request_code: 0 }"
 ```
 
-request_code：   
-0： start record path  
-1： stop record path  
-2： reset record path  
-3： get record path   
+    request_code：   
+        0： start record path  
+        1： stop record path  
+        2： reset record path  
+        3： get record path   
+
+4. pub topics
+
+topic name: `recorded_path`
