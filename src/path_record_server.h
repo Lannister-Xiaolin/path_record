@@ -31,6 +31,7 @@ class PathRecordServer : public rclcpp::Node {
  private:
 
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub_;
+  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_pub_;
   rclcpp::Service<path_record::srv::PathRecord>::SharedPtr path_record_server_;
   std::shared_ptr<tf2_ros::TransformListener> transform_listener_{nullptr};
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
@@ -47,6 +48,7 @@ class PathRecordServer : public rclcpp::Node {
   double path_pub_interval_;
   geometry_msgs::msg::PoseStamped current_pose_;
   rclcpp::Time last_warning_time_,last_pub_time_;
+  bool pub_recorded_pose_;
   void HandleService(
       const std::shared_ptr<rmw_request_id_t> request_header,
       const std::shared_ptr<path_record::srv::PathRecord::Request> request,

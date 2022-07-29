@@ -14,6 +14,7 @@ PathRecordServer::PathRecordServer() : Node("path_record_server") {
   path_record_server_ = this->create_service<path_record::srv::PathRecord>(service_prefix + "path_record", std::bind(
       &PathRecordServer::HandleService, this,
       std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+  pose_pub_ =  this->create_publisher<geometry_msgs::msg::PoseStamped>("recorded_pose", 1);
   tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
   transform_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
   this->declare_parameter("tracking_frame", "base_footprint");
@@ -25,7 +26,8 @@ PathRecordServer::PathRecordServer() : Node("path_record_server") {
   this->declare_parameter("frequency", 1.);
   this->declare_parameter("path_pub_frequency", 1.);
   this->declare_parameter("record_with_start", false);
-  if (get_parameter("record_with_start").as_bool()){
+  this->declare_parameter("pub_recorded_pose", false);
+  if (get_parameter("record_with_start").as_bool()) {
     UpdateParam();
     RCLCPP_INFO(get_logger(), "--- Start path record loop!!!");
     record_timer_ =
@@ -71,7 +73,7 @@ void PathRecordServer::HandleService(const std::shared_ptr<rmw_request_id_t> req
 }
 void PathRecordServer::RecordPath() {
   if (!working_status_) return;
-  auto now = this->now()-tf2::durationFromSec(0.02);
+  auto now = this->now() - tf2::durationFromSec(0.02);
   try {
     //hint: foxy with timeout param with block if no valid tf data in buffer!!!
     auto transform_stamped = tf_buffer_->lookupTransform(
@@ -82,12 +84,15 @@ void PathRecordServer::RecordPath() {
     auto relative_y = current_pose_.pose.position.y - record_path_.poses.back().pose.position.y;
     if (std::hypot(relative_x, relative_y) > dist_thresh_) {
       record_path_.poses.push_back(current_pose_);
+      if (pub_recorded_pose_) pose_pub_->publish(current_pose_);
     } else if (angle_thresh_ > 0) {
       auto &quat1 = current_pose_.pose.orientation;
       auto &quat2 = record_path_.poses.back().pose.orientation;
       if (tf2::angleShortestPath(tf2::Quaternion(quat1.x, quat1.y, quat1.z, quat1.w),
                                  tf2::Quaternion(quat2.x, quat2.y, quat2.z, quat2.w)) > angle_thresh_)
         record_path_.poses.push_back(current_pose_);
+      if (pub_recorded_pose_) pose_pub_->publish(current_pose_);
+
     }
     if ((now - last_pub_time_).seconds() > path_pub_interval_) {
       path_pub_->publish(record_path_);
@@ -113,6 +118,7 @@ void PathRecordServer::UpdateParam() {
   record_interval_ = 1.0 / get_parameter("frequency").as_double();
   path_pub_interval_ = 1.0 / get_parameter("path_pub_frequency").as_double();
   record_path_.header.frame_id = map_frame_;
+  pub_recorded_pose_ = get_parameter("pub_recorded_pose").as_bool();
   RCLCPP_INFO(get_logger(), "--- Update param success!!!");
 }
 geometry_msgs::msg::PoseStamped ToPoseStamped(const geometry_msgs::msg::TransformStamped &transform_stamped) {
