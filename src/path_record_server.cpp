@@ -127,6 +127,7 @@ geometry_msgs::msg::PoseStamped ToPoseStamped(const geometry_msgs::msg::Transfor
   pose_stamped.header.stamp = transform_stamped.header.stamp;
   pose_stamped.pose.position.x = transform_stamped.transform.translation.x;
   pose_stamped.pose.position.y = transform_stamped.transform.translation.y;
+  pose_stamped.pose.position.z = transform_stamped.transform.translation.z;
   pose_stamped.pose.orientation.x = transform_stamped.transform.rotation.x;
   pose_stamped.pose.orientation.y = transform_stamped.transform.rotation.y;
   pose_stamped.pose.orientation.z = transform_stamped.transform.rotation.z;
