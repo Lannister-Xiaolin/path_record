@@ -25,4 +25,7 @@ ros2 service call /path_record_server/path_record path_record/srv/PathRecord "{ 
 
 4. pub topics
 
-topic name: `recorded_path`
+topic name: `recorded_path`   nav_msgs::msg::Path
+
+
+topic name: `recorded_pose`    geometry_msgs::msg::PoseStamped

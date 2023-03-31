@@ -6,4 +6,4 @@ path_record_server:
     angle_thresh: 1.25 # if angle_distance(current_pose, last_recorded_pose) >angle_thresh, record current pose
     frequency: 5.    # frequency for query pose
     path_pub_frequency: 1.  # frequency for pub path
-    pub_recorded_pose: false
+    pub_recorded_pose: true  # whether to publish pose
