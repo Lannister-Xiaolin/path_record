@@ -14,7 +14,7 @@ PathRecordServer::PathRecordServer() : Node("path_record_server") {
   path_record_server_ = this->create_service<path_record::srv::PathRecord>(service_prefix + "path_record", std::bind(
       &PathRecordServer::HandleService, this,
       std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-  pose_pub_ =  this->create_publisher<geometry_msgs::msg::PoseStamped>("recorded_pose", 1);
+  pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("recorded_pose", 1);
   tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
   transform_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
   this->declare_parameter("tracking_frame", "base_footprint");
@@ -73,8 +73,18 @@ void PathRecordServer::HandleService(const std::shared_ptr<rmw_request_id_t> req
 }
 void PathRecordServer::RecordPath() {
   if (!working_status_) return;
-  auto now = this->now() - tf2::durationFromSec(0.02);
+  auto now = this->now() - tf2::durationFromSec(0.05);
   try {
+    if (!tf_buffer_->canTransform(
+        map_frame_, tracking_frame_, now, tf2::durationFromSec(0.1))) {
+      if ((now - last_warning_time_).seconds() > 5.0) {
+        RCLCPP_WARN(
+            this->get_logger(), "Could not transform %s to %s",
+            map_frame_.c_str(), tracking_frame_.c_str());
+        last_warning_time_ = now;
+      }
+      return;
+    }
     //hint: foxy with timeout param with block if no valid tf data in buffer!!!
     auto transform_stamped = tf_buffer_->lookupTransform(
         map_frame_, tracking_frame_, now, tf2::durationFromSec(0.1));
@@ -100,7 +110,7 @@ void PathRecordServer::RecordPath() {
     }
 
   } catch (tf2::TransformException &ex) {
-    if ((now - last_warning_time_).seconds() > 1.0) {
+    if ((now - last_warning_time_).seconds() > 5.0) {
       RCLCPP_WARN(
           this->get_logger(), "Could not transform %s to %s: %s",
           map_frame_.c_str(), tracking_frame_.c_str(), ex.what());
