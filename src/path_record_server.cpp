@@ -74,17 +74,10 @@ void PathRecordServer::HandleService(const std::shared_ptr<rmw_request_id_t> req
 void PathRecordServer::RecordPath() {
   if (!working_status_) return;
   auto now = this->now() - tf2::durationFromSec(0.05);
+  if ((now - last_warning_time_).seconds() < 3.0) {
+    return;
+  }
   try {
-    if (!tf_buffer_->canTransform(
-        map_frame_, tracking_frame_, now, tf2::durationFromSec(0.1))) {
-      if ((now - last_warning_time_).seconds() > 5.0) {
-        RCLCPP_WARN(
-            this->get_logger(), "Could not transform %s to %s",
-            map_frame_.c_str(), tracking_frame_.c_str());
-        last_warning_time_ = now;
-      }
-      return;
-    }
     //hint: foxy with timeout param with block if no valid tf data in buffer!!!
     auto transform_stamped = tf_buffer_->lookupTransform(
         map_frame_, tracking_frame_, now, tf2::durationFromSec(0.1));
