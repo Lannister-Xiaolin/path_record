@@ -80,7 +80,7 @@ void PathRecordServer::RecordPath() {
   try {
     //hint: foxy with timeout param with block if no valid tf data in buffer!!!
     auto transform_stamped = tf_buffer_->lookupTransform(
-        map_frame_, tracking_frame_, now, tf2::durationFromSec(0.1));
+        map_frame_, tracking_frame_, now, tf2::durationFromSec(0.02));
     current_pose_ = ToPoseStamped(transform_stamped);
     if (record_path_.poses.empty()) { record_path_.poses.push_back(current_pose_); }
     auto relative_x = current_pose_.pose.position.x - record_path_.poses.back().pose.position.x;
